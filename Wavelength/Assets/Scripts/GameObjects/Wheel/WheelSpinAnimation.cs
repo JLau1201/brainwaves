@@ -13,7 +13,7 @@ public class WheelSpinAnimation : NetworkBehaviour
     private Animator animator;
 
     private void Awake() {
-        animator = GetComponentInChildren<Animator>();
+        animator = GetComponent<Animator>();
         animator.enabled = false;
 
         spinButton.onClick.AddListener(() => {
