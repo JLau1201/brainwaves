@@ -5,7 +5,6 @@ using UnityEngine;
 public class TurnManager : MonoBehaviour
 {
 
-
     // Track the role of the player during the turn
     private PlayerRole currentPlayerRole;
     public enum PlayerRole {

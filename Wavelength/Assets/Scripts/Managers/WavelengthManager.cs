@@ -3,12 +3,9 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class WavelengthManager : MonoBehaviour
+public class WavelengthManager : NetworkBehaviour
 {
     public static WavelengthManager Instance { get; private set; }
-
-    List<int> Team1 = new List<int>();
-    List<int> Team2 = new List<int>();
 
     //Testing
     [SerializeField] private Button button;
@@ -36,5 +33,25 @@ public class WavelengthManager : MonoBehaviour
     }
 
     private void Update() {
+    }
+
+    private void ChangeGameState(GameState newGameState) {
+        currentGameState = newGameState;
+
+        switch(currentGameState) {
+            case GameState.Countdown:
+                break;
+            case GameState.Team1Playing:
+                break;
+            case GameState.Team2Playing:
+                break;
+            case GameState.Paused:
+                break;
+            case GameState.Finished:
+                break;
+            default:
+                Debug.LogError("Unknown Game State!");
+                break;
+        }
     }
 }
