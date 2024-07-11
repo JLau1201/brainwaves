@@ -12,12 +12,15 @@ public class WavelengthManager : NetworkBehaviour
     [Header("Scripts")]
     [SerializeField] private TransitionUI transitionUI;
 
-    //Testing
-    [SerializeField] private Button button;
-
     private int psychicTurnInd;
     private int guesserTurnInd;
     private int teamTurn;
+
+
+    // Player Info
+    private PlayerData playerData;
+    private int team;
+    private int playerInd;
 
     private List<List<PlayerData>> teamsList = new List<List<PlayerData>>();
 
@@ -60,8 +63,13 @@ public class WavelengthManager : NetworkBehaviour
                 string playerName = teamsList[teamTurn][psychicTurnInd].playerName.ToString();
                 PlayTransitionAnimationClientRpc(role, playerName);
 
+                AssignPlayerRoleClientRpc(teamTurn, psychicTurnInd, guesserTurnInd);
+
+                ChangeTurnState(TurnState.WheelSpin);
                 break;
             case TurnState.WheelSpin:
+
+
                 break;
             case TurnState.Psychic:
                 break;
@@ -72,14 +80,32 @@ public class WavelengthManager : NetworkBehaviour
         }
     }
 
+    [ClientRpc]
+    private void AssignPlayerRoleClientRpc(int teamTurn, int psychicTurnInd, int guesserTurnInd) {
+        if(team == teamTurn) {
+            if (playerInd == psychicTurnInd) {
+                TurnManager.Instance.SetPlayerTurnRole(TurnManager.PlayerRole.Psychic);
+            } else if (playerInd == guesserTurnInd) {
+                TurnManager.Instance.SetPlayerTurnRole(TurnManager.PlayerRole.Guesser);
+            } else {
+                TurnManager.Instance.SetPlayerTurnRole(TurnManager.PlayerRole.TeamViewer);
+            }
+        } else {
+            TurnManager.Instance.SetPlayerTurnRole(TurnManager.PlayerRole.EnemyViewer);
+        }
+    }
+
     private void ChangeGameState(GameState newGameState) {
         currentGameState = newGameState;
         switch (currentGameState) {
             case GameState.Team1Playing:
+                teamTurn = 0;
                 ChangeTurnState(TurnState.TurnStart);
 
                 break;
             case GameState.Team2Playing:
+                teamTurn = 1;
+
                 break;
             case GameState.Finished:
                 break;
@@ -92,15 +118,22 @@ public class WavelengthManager : NetworkBehaviour
             InitializeGame();
             StartCoroutine(StartGameCountdown());
         }
-
-        button.onClick.AddListener(() => {
-        });
     }
-    
+
+    [ClientRpc]
+    private void SetPlayerInfoClientRpc(PlayerData playerData, int team, int playerInd) {
+        // Assign player data
+        this.playerData = MultiplayerManager.Instance.GetPlayerData();
+
+        if(this.playerData.Equals(playerData)) {
+            this.team = team;
+            this.playerInd = playerInd;
+        }
+    }
+
     private void InitializeGame() {
         psychicTurnInd = 0;
         guesserTurnInd = 1;
-        teamTurn = 0;
         teamsList.Add(MultiplayerManager.Instance.GetTeamOnePlayerDataList());
         teamsList.Add(MultiplayerManager.Instance.GetTeamTwoPlayerDataList());
     }
@@ -108,6 +141,11 @@ public class WavelengthManager : NetworkBehaviour
     private IEnumerator StartGameCountdown() {
         yield return new WaitForSeconds(gameStartCountdown);
 
+        for (int i = 0; i < teamsList.Count; i++) {
+            for (int j = 0; j < teamsList[i].Count; j++) {
+                SetPlayerInfoClientRpc(teamsList[i][j], i, j);
+            }
+        }
         ChangeGameState(GameState.Team1Playing);
     }
 
