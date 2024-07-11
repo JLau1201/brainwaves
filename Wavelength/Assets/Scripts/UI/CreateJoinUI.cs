@@ -9,6 +9,7 @@ public class CreateJoinUI : BaseUI
 
     [Header("UIs")]
     [SerializeField] private TitleScreenUI titleScreenUI;
+    [SerializeField] private ConnectingUI connectingUI;
     [SerializeField] private LobbyUI lobbyUI;
 
     [Header("Buttons")]
@@ -20,8 +21,21 @@ public class CreateJoinUI : BaseUI
     [SerializeField] private TMP_InputField playerNameInputField;
     [SerializeField] private TMP_InputField lobbyCodeInputField;
 
+    private void Start() {
+        MultiplayerManager.Instance.OnConnectionApproved += MultiplayerManager_OnConnectionApproved;
+    }
+
+    private void MultiplayerManager_OnConnectionApproved(object sender, System.EventArgs e) {
+        Hide();
+        connectingUI.Hide();
+        lobbyUI.Show();
+    }
+
     private void Awake() {
         Hide();
+
+        int randInt = Random.Range(1, 100);
+        playerNameInputField.text = "Player " + randInt.ToString();
 
         backButton.onClick.AddListener(() => {
             titleScreenUI.Show();
@@ -30,15 +44,17 @@ public class CreateJoinUI : BaseUI
         
         hostButton.onClick.AddListener(() => {
             string playerName = playerNameInputField.text;
-
-            LobbyManager.Instance.CreateLobby(playerName);
+            connectingUI.Show();
+            LobbyManager.Instance.CreateLobby();
+            MultiplayerManager.Instance.SetPlayerName(playerName);
         });
         
         joinButton.onClick.AddListener(() => {
             string playerName = playerNameInputField.text;
             string lobbyCode = lobbyCodeInputField.text;
-
-            LobbyManager.Instance.JoinWithCode(playerName, lobbyCode);
+            connectingUI.Show();
+            LobbyManager.Instance.JoinWithCode(lobbyCode);
+            MultiplayerManager.Instance.SetPlayerName(playerName);
         });
 
         // Check for valid lobby code
@@ -51,5 +67,10 @@ public class CreateJoinUI : BaseUI
                 joinButton.interactable = false;
             }
         });
+    }
+
+    public override void OnDestroy() {
+        base.OnDestroy();
+        MultiplayerManager.Instance.OnConnectionApproved -= MultiplayerManager_OnConnectionApproved;
     }
 }

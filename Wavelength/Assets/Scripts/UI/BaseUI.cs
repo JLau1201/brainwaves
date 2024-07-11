@@ -11,10 +11,12 @@ public class BaseUI : NetworkBehaviour
         CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
         canvasGroup.alpha = 1.0f;
         canvasGroup.interactable = true;
+        canvasGroup.blocksRaycasts = true;
     }
     public void Hide() {
         CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
         canvasGroup.alpha = 0.0f;
         canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
     }
 }
