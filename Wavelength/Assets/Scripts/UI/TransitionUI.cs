@@ -1,8 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using Unity.Netcode;
 using UnityEngine;
 
 public class TransitionUI : MonoBehaviour
@@ -24,8 +21,16 @@ public class TransitionUI : MonoBehaviour
     }
 
     public void SetText(string role, string playerName) {
-        roleText.text = role;
-        turnStartText.text = playerName + " TURN START!";
+        if (role == "") {
+            roleText.text = "Game Over";
+            turnStartText.text = "Team " + playerName + " Wins!";
+        } else if (playerName == "") {
+            roleText.text = "Game Start";
+            turnStartText.text = "Team 1 Goes First!";
+        } else {
+            roleText.text = role;
+            turnStartText.text = playerName + " Turn Start!";
+        }
     }
 
     public void PlayAnimation() {

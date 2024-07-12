@@ -24,6 +24,9 @@ public class MultiplayerManager : NetworkBehaviour
     private PlayerData playerData;
     private FixedString64Bytes playerName;
 
+    private string teamOneName;
+    private string teamTwoName;
+
     private void Awake() {
         Instance = this;
         DontDestroyOnLoad(gameObject);
@@ -150,6 +153,10 @@ public class MultiplayerManager : NetworkBehaviour
         return teamTwoList;
     }
 
+    public List<PlayerData> GetPlayerDataList() {
+        return playerDataList;
+    }
+
     public void LeaveGame(PlayerData playerData) {
         playerDataList.Remove(playerData);
         if (teamOneList.Contains(playerData)) {
@@ -157,5 +164,18 @@ public class MultiplayerManager : NetworkBehaviour
         } else {
             teamTwoList.Remove(playerData);
         }
+    }
+
+    public void SetTeamNames(string teamOneName, string teamTwoName) {
+        this.teamOneName = teamOneName;
+        this.teamTwoName = teamTwoName;
+    }
+
+    public string GetTeamOneName() {
+        return teamOneName;
+    }
+
+    public string GetTeamTwoName() {
+        return teamTwoName;
     }
 }

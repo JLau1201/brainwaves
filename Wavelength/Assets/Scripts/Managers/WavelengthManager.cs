@@ -8,27 +8,25 @@ public class WavelengthManager : NetworkBehaviour
 {
     public static WavelengthManager Instance { get; private set; }
 
-
     [Header("Scripts")]
     [SerializeField] private TransitionUI transitionUI;
     [SerializeField] private WheelSpinAnimation wheelSpinAnimation;
     [SerializeField] private ConfirmDial confirmDial;
     [SerializeField] private RotateDial rotateDial;
     [SerializeField] private CardDisplay cardDisplay;
+    [SerializeField] private TeamUI teamOneUI;
+    [SerializeField] private TeamUI teamTwoUI;
+    [SerializeField] private AddScoreAnimation addScoreTeamOneAnimation;
+    [SerializeField] private AddScoreAnimation addScoreTeamTwoAnimation;
+    [SerializeField] private GameOverUI gameOverUI;
 
     [Header("Buttons")]
     [SerializeField] private Button confirmButton;
 
-    // *** TODO ***
-    // TEAM CHANGE ANIMATION/STALL DURATION
-    // PSYCHIC/GUESSER TURN IND ROTATION
-    // IN GAME UI
-    // ^- SCORE/TEAM NAME/PLAYER DATA/ICON
-    // GAME OVER - 10 POINTS
-
-
-    private int psychicTurnInd;
-    private int guesserTurnInd;
+    private int teamOnePsychicTurnInd;
+    private int teamOneGuesserTurnInd;
+    private int teamTwoPsychicTurnInd;
+    private int teamTwoGuesserTurnInd;
     private int teamTurn;
 
     // Player Info
@@ -41,6 +39,8 @@ public class WavelengthManager : NetworkBehaviour
     private int teamTwoScore;
 
     private float gameStartCountdown = 3f;
+
+    private int targetScore = 1;
 
     // Track current state of the game
     private GameState currentGameState;    
@@ -63,6 +63,22 @@ public class WavelengthManager : NetworkBehaviour
     private void Start() {
         transitionUI.OnTransitionAnimationFinished += TransitionUIScript_OnTransitionAnimationFinished;
         wheelSpinAnimation.OnWheelSpinFinished += WheelSpinAnimation_OnWheelSpinFinished;
+        addScoreTeamOneAnimation.OnAddScoreAnimationFinished += AddScoreTeamOneAnimation_OnAddScoreAnimationFinished;
+        addScoreTeamTwoAnimation.OnAddScoreAnimationFinished += AddScoreTeamTwoAnimation_OnAddScoreAnimationFinished;
+    }
+
+    private void AddScoreTeamTwoAnimation_OnAddScoreAnimationFinished(object sender, System.EventArgs e) {
+        teamTwoUI.UpdateScore(teamTwoScore);
+        if (teamTwoScore >= targetScore) {
+            PlayTransitionAnimationClientRpc("", "2");
+        }
+    }
+
+    private void AddScoreTeamOneAnimation_OnAddScoreAnimationFinished(object sender, System.EventArgs e) {
+        teamOneUI.UpdateScore(teamOneScore);
+        if (teamOneScore >= targetScore) {
+            PlayTransitionAnimationClientRpc("", "1");
+        }
     }
 
     private void WheelSpinAnimation_OnWheelSpinFinished(object sender, System.EventArgs e) {
@@ -71,6 +87,7 @@ public class WavelengthManager : NetworkBehaviour
 
     private void TransitionUIScript_OnTransitionAnimationFinished(object sender, System.EventArgs e) {
         if (!NetworkManager.Singleton.IsHost) return;
+        if (currentGameState == GameState.Finished) return;
         switch (currentTurnState) {
             case TurnState.TurnStart:
                 cardDisplay.ChooseRandomCard();
@@ -80,6 +97,9 @@ public class WavelengthManager : NetworkBehaviour
             case TurnState.Psychic:
                 ChangeTurnState(TurnState.Guesser);
                 break;
+            case TurnState.TurnEnd:
+                StartCoroutine(StartNewTurn());
+                break;
         }
     }
 
@@ -88,9 +108,17 @@ public class WavelengthManager : NetworkBehaviour
         switch (currentTurnState) {
             case TurnState.TurnStart:
                 string role = "Psychic";
-                string playerName = teamsList[teamTurn][psychicTurnInd].playerName.ToString();
-                AssignPlayerRoleClientRpc(teamTurn, psychicTurnInd, guesserTurnInd);
-                rotateDial.ChangeOwnership(teamsList[teamTurn][guesserTurnInd].clientId);
+                string playerName;
+                if (teamTurn == 0) {
+                    playerName = teamsList[teamTurn][teamOnePsychicTurnInd].playerName.ToString();
+                    AssignPlayerRoleClientRpc(teamTurn, teamOnePsychicTurnInd, teamOneGuesserTurnInd);
+                    rotateDial.ChangeOwnership(teamsList[teamTurn][teamOneGuesserTurnInd].clientId);
+                } else { 
+                    playerName = teamsList[teamTurn][teamTwoPsychicTurnInd].playerName.ToString();
+                    AssignPlayerRoleClientRpc(teamTurn, teamTwoPsychicTurnInd, teamTwoGuesserTurnInd);
+                    rotateDial.ChangeOwnership(teamsList[teamTurn][teamTwoGuesserTurnInd].clientId);
+                }
+
                 PlayTransitionAnimationClientRpc(role, playerName);
                 break;
             case TurnState.WheelSpin:
@@ -103,22 +131,55 @@ public class WavelengthManager : NetworkBehaviour
                 ChangeTurnClientRpc(currentTurnState);
                 break;
             case TurnState.TurnEnd:
+                ChangeGameState(GameState.Finished);
                 ChangeTurnClientRpc(TurnState.TurnEnd);
+                StartCoroutine(EndOfTurn());
+                break;
+        }
+    }
 
-                // Stall/Add transition to next teams turn
-                switch (teamTurn) {
-                    case 0:
-                        if (teamsList[1].Count == 0) {
-                            ChangeGameState(GameState.Team1Playing);
-                        } else {
-                            ChangeGameState(GameState.Team2Playing);
-                        }
-                        break;
-                    case 1:
-                        ChangeGameState(GameState.Team1Playing);
-                        break;
+    private IEnumerator EndOfTurn() {
+        int overStateTime = 5;
+        yield return new WaitForSeconds(overStateTime);
+
+        if(currentGameState == GameState.Finished) {
+            ShowGameOverUIClientRpc();
+        } else {
+            string role = "Changing Sides";
+            switch (teamTurn) {
+                case 0:
+                    if (teamsList[1].Count == 0) {
+                        PlayTransitionAnimationClientRpc(role, MultiplayerManager.Instance.GetTeamOneName());
+                    } else {
+                        PlayTransitionAnimationClientRpc(role, MultiplayerManager.Instance.GetTeamTwoName());
+                    }
+                    break;
+                case 1:
+                    PlayTransitionAnimationClientRpc(role, MultiplayerManager.Instance.GetTeamOneName());
+                    break;
+            }
+        }
+    }
+
+    [ClientRpc]
+    private void ShowGameOverUIClientRpc() {
+        gameOverUI.Show();
+    }
+
+    private IEnumerator StartNewTurn() {
+        int waitTime = 1;
+        yield return new WaitForSeconds(waitTime);
+
+        switch (teamTurn) {
+            case 0:
+                if (teamsList[1].Count == 0) {
+                    ChangeGameState(GameState.Team1Playing);
+                } else {
+                    ChangeGameState(GameState.Team2Playing);
                 }
-
+                break;
+            case 1:
+                ChangeGameState(GameState.Team1Playing);
                 break;
         }
     }
@@ -164,12 +225,17 @@ public class WavelengthManager : NetworkBehaviour
         switch (currentGameState) {
             case GameState.Team1Playing:
                 teamTurn = 0;
-                ChangeTurnState(TurnState.TurnStart);
+                teamOnePsychicTurnInd = (teamOnePsychicTurnInd + 1) % teamsList[0].Count;
+                teamOneGuesserTurnInd = (teamOneGuesserTurnInd + 1) % teamsList[0].Count;
 
+                ChangeTurnState(TurnState.TurnStart);
                 break;
             case GameState.Team2Playing:
                 teamTurn = 1;
-                
+
+                teamTwoPsychicTurnInd = (teamTwoPsychicTurnInd + 1) % teamsList[1].Count;
+                teamTwoGuesserTurnInd = (teamTwoGuesserTurnInd + 1) % teamsList[1].Count;
+
                 ChangeTurnState(TurnState.TurnStart);
                 break;
             case GameState.Finished:
@@ -182,6 +248,7 @@ public class WavelengthManager : NetworkBehaviour
         if (NetworkManager.Singleton.IsHost) {
             InitializeGame();
             StartCoroutine(StartGameCountdown());
+            PlayTransitionAnimationClientRpc("ASDASD", "");
         }
 
         confirmButton.onClick.AddListener(OnConfirmButtonServerRpc);
@@ -192,7 +259,7 @@ public class WavelengthManager : NetworkBehaviour
         switch (currentTurnState) {
             case TurnState.Psychic:
                 string role = "Guesser";
-                string playerName = teamsList[teamTurn][guesserTurnInd].playerName.ToString();
+                string playerName = teamsList[teamTurn][teamOneGuesserTurnInd].playerName.ToString();
 
                 PlayTransitionAnimationClientRpc(role, playerName);
                 break;
@@ -200,9 +267,11 @@ public class WavelengthManager : NetworkBehaviour
                 int score = confirmDial.GetGuessScore();
                 switch (teamTurn) {
                     case 0:
+                        PlayAddScoreTeamOneAnimationClientRpc(score);
                         teamOneScore += score;
                         break;
                     case 1:
+                        PlayAddScoreTeamTwoAnimationClientRpc(score);
                         teamTwoScore += score;
                         break;
                 }
@@ -224,8 +293,10 @@ public class WavelengthManager : NetworkBehaviour
     }
 
     private void InitializeGame() {
-        psychicTurnInd = 0;
-        guesserTurnInd = 1;
+        teamOnePsychicTurnInd = -1;
+        teamOneGuesserTurnInd = 0;
+        teamTwoPsychicTurnInd = -1;
+        teamTwoGuesserTurnInd = 0;
         teamsList.Add(MultiplayerManager.Instance.GetTeamOnePlayerDataList());
         teamsList.Add(MultiplayerManager.Instance.GetTeamTwoPlayerDataList());
     }
@@ -246,5 +317,19 @@ public class WavelengthManager : NetworkBehaviour
         transitionUI.SetText(role, playerName);
 
         transitionUI.PlayAnimation();
+    }
+    
+    [ClientRpc]
+    private void PlayAddScoreTeamOneAnimationClientRpc(int newScore) {
+        addScoreTeamOneAnimation.SetText(newScore);
+
+        addScoreTeamOneAnimation.PlayAnimation();
+    }
+    
+    [ClientRpc]
+    private void PlayAddScoreTeamTwoAnimationClientRpc(int newScore) {
+        addScoreTeamTwoAnimation.SetText(newScore);
+
+        addScoreTeamTwoAnimation.PlayAnimation();
     }
 }

@@ -63,7 +63,6 @@ public class TurnManager : MonoBehaviour {
                 confirmButton.interactable = false;
                 break;
             case PlayerRole.Guesser:
-                Debug.Log("YOUR GUESS TURN");
                 rotateDial.SetCanSpin(true);
                 confirmButton.interactable = true;
                 break;

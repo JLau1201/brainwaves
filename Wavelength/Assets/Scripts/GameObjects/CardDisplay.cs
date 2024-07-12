@@ -15,7 +15,8 @@ public class CardDisplay : NetworkBehaviour
 
     private Animator animator;
     private AnimatorStateInfo animatorStateInfo;
-    private int loopCount = 15;
+    private int currLoopCount = 15;
+    private int loopAmount = 15;
 
 
     private List<string[]> allCardsList = new List<string[]>();
@@ -62,9 +63,9 @@ public class CardDisplay : NetworkBehaviour
     private void Update() {
         if (animator.enabled) {
             animatorStateInfo = animator.GetCurrentAnimatorStateInfo(0);
-            if (animatorStateInfo.normalizedTime >= loopCount) {
+            if (animatorStateInfo.normalizedTime >= currLoopCount) {
                 animator.enabled = false;
-                loopCount *= 2;
+                currLoopCount += loopAmount;
             }
         }
     }

@@ -78,7 +78,6 @@ public class RotateDial : MonoBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void ChangeOwnershipServerRpc(ulong clientId) {
         GetComponent<NetworkObject>().ChangeOwnership(clientId);
-        Debug.Log(clientId);
     }
 
     public void ChangeOwnership(ulong clientId) {

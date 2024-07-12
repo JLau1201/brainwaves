@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using TMPro;
 using Unity.Collections;
@@ -48,11 +49,11 @@ public class LobbyUI : BaseUI
 
         UpdateTeamDisplayClientRpc(teamOneSize, teamTwoSize);
 
-        foreach(PlayerData playerData in teamOneList) {
+        foreach (PlayerData playerData in teamOneList) {
             PopulateTeamOnePlayerDataHolderClientRpc(playerData.playerName);
         }
 
-        foreach(PlayerData playerData in teamTwoList) {
+        foreach (PlayerData playerData in teamTwoList) {
             PopulateTeamTwoPlayerDataHolderClientRpc(playerData.playerName);
         }
     }
@@ -112,6 +113,7 @@ public class LobbyUI : BaseUI
         });
 
         startButton.onClick.AddListener(() => {
+            SetTeamNamesClientRpc();
             SceneLoader.LoadSceneNetwork(SceneLoader.Scene.Game);
         });
 
@@ -124,6 +126,28 @@ public class LobbyUI : BaseUI
             PlayerData playerData = MultiplayerManager.Instance.GetPlayerData();
             JoinTeamServerRpc(playerData, 2);
         });
+    }
+
+    private void Update() {
+        // Check if all players are in teams
+        // Check if each team has at least two players
+        // ^- Team two can have 0 players
+        if (LobbyManager.Instance.IsLobbyHost()) {
+            int teamOneCount = MultiplayerManager.Instance.GetTeamOnePlayerDataList().Count;
+            int teamTwoCount = MultiplayerManager.Instance.GetTeamTwoPlayerDataList().Count;
+            int totalPlayerCount = MultiplayerManager.Instance.GetPlayerDataList().Count;
+
+            if (teamOneCount + teamTwoCount != totalPlayerCount || teamTwoCount == 1 || teamOneCount < 2) {
+                startButton.interactable = false;
+            } else {
+                startButton.interactable = true;
+            }
+        }
+    }
+
+    [ClientRpc]
+    private void SetTeamNamesClientRpc() {
+        MultiplayerManager.Instance.SetTeamNames(TeamOneNameInputField.text, TeamTwoNameInputField.text);
     }
 
     [ServerRpc(RequireOwnership = false)]
