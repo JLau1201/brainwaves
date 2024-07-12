@@ -21,7 +21,7 @@ public class WheelCover : MonoBehaviour
 
     private IEnumerator FillWheelCover(int dir) {
         float elapsedTime = 0f;
-        float targetFill = (dir == 1) ? 1f : 0.5f;
+        float targetFill = (dir == 1) ? 0.5f : 1f;
 
         while (elapsedTime < fillTime) {
             elapsedTime += Time.deltaTime;

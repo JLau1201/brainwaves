@@ -356,7 +356,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   transitionUI: {fileID: 1976907825}
-  button: {fileID: 452799557}
+  wheelSpinAnimation: {fileID: 1032572062}
+  confirmDial: {fileID: 1692236150}
+  rotateDial: {fileID: 1692236148}
+  cardDisplay: {fileID: 1426978569}
+  confirmButton: {fileID: 452799557}
 --- !u!114 &55371622
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2309,7 +2313,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.0019, y: 0.1}
+  m_AnchoredPosition: {x: -0.0019, y: -0.32}
   m_SizeDelta: {x: 0.75, y: 0.4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &698350720
@@ -2602,7 +2606,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 2
+  m_SortingOrder: 3
   m_TargetDisplay: 0
 --- !u!1 &773590227
 GameObject:
@@ -3103,7 +3107,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1032572058}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5e6b250a6245cc74c9469b57b70691ad, type: 3}
   m_Name: 
@@ -3125,7 +3129,7 @@ MonoBehaviour:
   UseQuaternionCompression: 0
   UseHalfFloatPrecision: 0
   InLocalSpace: 0
-  Interpolate: 1
+  Interpolate: 0
   SlerpPosition: 0
 --- !u!114 &1032572062
 MonoBehaviour:
@@ -3574,7 +3578,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingOrder: 3
   m_Sprite: {fileID: 21300000, guid: d3fe537740f8dbe459a7f3ef017b7b0c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -4087,6 +4091,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1426978570}
   - component: {fileID: 1426978569}
+  - component: {fileID: 1426978571}
+  - component: {fileID: 1426978572}
   m_Layer: 0
   m_Name: CardDisplay
   m_TagString: Untagged
@@ -4128,6 +4134,48 @@ Transform:
   - {fileID: 1586718127}
   m_Father: {fileID: 773590228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &1426978571
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1426978568}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: fdd48c174c33695469765db180cbe028, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1426978572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1426978568}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 330043269
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!1 &1440136654
 GameObject:
   m_ObjectHideFlags: 0
@@ -4306,7 +4354,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0.1}
+  m_AnchoredPosition: {x: 0, y: -0.32}
   m_SizeDelta: {x: 0.75, y: 0.4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1457788077
@@ -4925,6 +4973,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60c1008c599ce80408fcb97b26d40d2b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  confirmButton: {fileID: 452799557}
+  spinButton: {fileID: 187038535}
+  wheelSpinAnimation: {fileID: 1032572062}
+  wheelCover: {fileID: 1440136655}
+  rotateDial: {fileID: 1692236148}
 --- !u!1 &1688823108
 GameObject:
   m_ObjectHideFlags: 0
@@ -5011,6 +5064,8 @@ GameObject:
   - component: {fileID: 1692236149}
   - component: {fileID: 1692236148}
   - component: {fileID: 1692236150}
+  - component: {fileID: 1692236151}
+  - component: {fileID: 1692236152}
   m_Layer: 0
   m_Name: Dial
   m_TagString: Untagged
@@ -5062,8 +5117,59 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 404c41165b2366a49a852ff7af4d16c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  button: {fileID: 452799557}
   hitMarker: {fileID: 596440905}
+--- !u!114 &1692236151
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1692236147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e6b250a6245cc74c9469b57b70691ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  UseUnreliableDeltas: 0
+  SyncPositionX: 0
+  SyncPositionY: 0
+  SyncPositionZ: 0
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 1
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
+--- !u!114 &1692236152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1692236147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 2871054232
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!1 &1726815629
 GameObject:
   m_ObjectHideFlags: 0

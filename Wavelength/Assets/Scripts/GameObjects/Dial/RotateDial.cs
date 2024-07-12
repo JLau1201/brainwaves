@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class RotateDial : MonoBehaviour
@@ -9,6 +10,7 @@ public class RotateDial : MonoBehaviour
 
     private Collider2D dialCollider;
     private bool isHoldingDial = false;
+    private bool canSpin = false;
 
     private void Awake() {
         GameInputs.Instance.OnLeftMouseDown += GameInputs_OnLeftMouseDown;
@@ -34,11 +36,15 @@ public class RotateDial : MonoBehaviour
     }
 
     private void Update() {
-        if (isHoldingDial) {
+        if (isHoldingDial && canSpin) {
             RotateWithMouse();
         } else if(GameInputs.Instance.GetKeyRotate().x != 0){
             RotateWithKeys();
         }
+    }
+
+    public void SetCanSpin(bool can) {
+        canSpin = can;
     }
 
     private void RotateWithMouse() {
@@ -67,5 +73,15 @@ public class RotateDial : MonoBehaviour
         // Rotate the z axis
         Vector3 newRotation = new Vector3(0f, 0f, clampedAngle);
         transform.rotation = Quaternion.Euler(newRotation);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void ChangeOwnershipServerRpc(ulong clientId) {
+        GetComponent<NetworkObject>().ChangeOwnership(clientId);
+        Debug.Log(clientId);
+    }
+
+    public void ChangeOwnership(ulong clientId) {
+        ChangeOwnershipServerRpc(clientId);
     }
 }

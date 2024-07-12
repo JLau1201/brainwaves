@@ -11,11 +11,25 @@ public class WavelengthManager : NetworkBehaviour
 
     [Header("Scripts")]
     [SerializeField] private TransitionUI transitionUI;
+    [SerializeField] private WheelSpinAnimation wheelSpinAnimation;
+    [SerializeField] private ConfirmDial confirmDial;
+    [SerializeField] private RotateDial rotateDial;
+    [SerializeField] private CardDisplay cardDisplay;
+
+    [Header("Buttons")]
+    [SerializeField] private Button confirmButton;
+
+    // *** TODO ***
+    // TEAM CHANGE ANIMATION/STALL DURATION
+    // PSYCHIC/GUESSER TURN IND ROTATION
+    // IN GAME UI
+    // ^- SCORE/TEAM NAME/PLAYER DATA/ICON
+    // GAME OVER - 10 POINTS
+
 
     private int psychicTurnInd;
     private int guesserTurnInd;
     private int teamTurn;
-
 
     // Player Info
     private PlayerData playerData;
@@ -23,6 +37,8 @@ public class WavelengthManager : NetworkBehaviour
     private int playerInd;
 
     private List<List<PlayerData>> teamsList = new List<List<PlayerData>>();
+    private int teamOneScore;
+    private int teamTwoScore;
 
     private float gameStartCountdown = 3f;
 
@@ -45,12 +61,24 @@ public class WavelengthManager : NetworkBehaviour
     }
 
     private void Start() {
-        transitionUI.OnTransitionAnimationFinished += TurnStartUIScript_OnTurnStartAnimationFinished;
+        transitionUI.OnTransitionAnimationFinished += TransitionUIScript_OnTransitionAnimationFinished;
+        wheelSpinAnimation.OnWheelSpinFinished += WheelSpinAnimation_OnWheelSpinFinished;
     }
 
-    private void TurnStartUIScript_OnTurnStartAnimationFinished(object sender, System.EventArgs e) {
+    private void WheelSpinAnimation_OnWheelSpinFinished(object sender, System.EventArgs e) {
+        ChangeTurnState(TurnState.Psychic);
+    }
+
+    private void TransitionUIScript_OnTransitionAnimationFinished(object sender, System.EventArgs e) {
+        if (!NetworkManager.Singleton.IsHost) return;
         switch (currentTurnState) {
             case TurnState.TurnStart:
+                cardDisplay.ChooseRandomCard();
+
+                ChangeTurnState(TurnState.WheelSpin);
+                break;
+            case TurnState.Psychic:
+                ChangeTurnState(TurnState.Guesser);
                 break;
         }
     }
@@ -61,21 +89,57 @@ public class WavelengthManager : NetworkBehaviour
             case TurnState.TurnStart:
                 string role = "Psychic";
                 string playerName = teamsList[teamTurn][psychicTurnInd].playerName.ToString();
-                PlayTransitionAnimationClientRpc(role, playerName);
-
                 AssignPlayerRoleClientRpc(teamTurn, psychicTurnInd, guesserTurnInd);
-
-                ChangeTurnState(TurnState.WheelSpin);
+                rotateDial.ChangeOwnership(teamsList[teamTurn][guesserTurnInd].clientId);
+                PlayTransitionAnimationClientRpc(role, playerName);
                 break;
             case TurnState.WheelSpin:
-
-
+                ChangeTurnClientRpc(currentTurnState);
                 break;
             case TurnState.Psychic:
+                ChangeTurnClientRpc(currentTurnState);
                 break;
             case TurnState.Guesser:
+                ChangeTurnClientRpc(currentTurnState);
                 break;
             case TurnState.TurnEnd:
+                ChangeTurnClientRpc(TurnState.TurnEnd);
+
+                // Stall/Add transition to next teams turn
+                switch (teamTurn) {
+                    case 0:
+                        if (teamsList[1].Count == 0) {
+                            ChangeGameState(GameState.Team1Playing);
+                        } else {
+                            ChangeGameState(GameState.Team2Playing);
+                        }
+                        break;
+                    case 1:
+                        ChangeGameState(GameState.Team1Playing);
+                        break;
+                }
+
+                break;
+        }
+    }
+
+    [ClientRpc]
+    private void ChangeTurnClientRpc(TurnState turnState) {
+        currentTurnState = turnState;
+        switch (currentTurnState) {
+            case TurnState.TurnStart:
+                break;
+            case TurnState.WheelSpin:
+                TurnManager.Instance.WheelSpinTurn();
+                break;
+            case TurnState.Psychic:
+                TurnManager.Instance.PsychicTurn();
+                break;
+            case TurnState.Guesser:
+                TurnManager.Instance.GuesserTurn();
+                break;
+            case TurnState.TurnEnd:
+                TurnManager.Instance.TurnOver();
                 break;
         }
     }
@@ -105,7 +169,8 @@ public class WavelengthManager : NetworkBehaviour
                 break;
             case GameState.Team2Playing:
                 teamTurn = 1;
-
+                
+                ChangeTurnState(TurnState.TurnStart);
                 break;
             case GameState.Finished:
                 break;
@@ -117,6 +182,33 @@ public class WavelengthManager : NetworkBehaviour
         if (NetworkManager.Singleton.IsHost) {
             InitializeGame();
             StartCoroutine(StartGameCountdown());
+        }
+
+        confirmButton.onClick.AddListener(OnConfirmButtonServerRpc);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void OnConfirmButtonServerRpc() {
+        switch (currentTurnState) {
+            case TurnState.Psychic:
+                string role = "Guesser";
+                string playerName = teamsList[teamTurn][guesserTurnInd].playerName.ToString();
+
+                PlayTransitionAnimationClientRpc(role, playerName);
+                break;
+            case TurnState.Guesser:
+                int score = confirmDial.GetGuessScore();
+                switch (teamTurn) {
+                    case 0:
+                        teamOneScore += score;
+                        break;
+                    case 1:
+                        teamTwoScore += score;
+                        break;
+                }
+
+                ChangeTurnState(TurnState.TurnEnd);
+                break;
         }
     }
 

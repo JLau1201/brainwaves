@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 
-public class CardDisplay : MonoBehaviour
+public class CardDisplay : NetworkBehaviour
 {
     [Header("Text")]
     [SerializeField] private TextMeshProUGUI rightCardText;
@@ -11,12 +13,18 @@ public class CardDisplay : MonoBehaviour
     [Header("CardData")]
     [SerializeField] private TextAsset cardData;
 
+    private Animator animator;
+    private AnimatorStateInfo animatorStateInfo;
+    private int loopCount = 15;
+
 
     private List<string[]> allCardsList = new List<string[]>();
 
-    private void Start() {
+    private void Awake() {
         ParseCSV();
-        ChooseRandomCard();
+        animator = GetComponent<Animator>();
+        animator.enabled = false;
+        ResetCards();
     }
 
     private void ParseCSV() {
@@ -30,12 +38,34 @@ public class CardDisplay : MonoBehaviour
         }
     }
 
-    private void ChooseRandomCard() {
-        // Get random index
-        int randomIndex = Random.Range(0, allCardsList.Count-1);
+    private void ResetCards() {
+        rightCardText.text = "";
+        leftCardText.text = "";
+    }
 
-        // Set card text
-        rightCardText.text = allCardsList[randomIndex][0];
-        leftCardText.text = allCardsList[randomIndex][1];
+    public void ChooseRandomCard() {
+        // Get random index
+        int randomIndex = UnityEngine.Random.Range(0, allCardsList.Count - 1);
+        string rightWord = allCardsList[randomIndex][1];
+        string leftWord = allCardsList[randomIndex][0];
+
+        PlayCardSelectionAnimationClientRpc(rightWord, leftWord);
+    }
+
+    [ClientRpc]
+    private void PlayCardSelectionAnimationClientRpc(string rightWord, string leftWord) {
+        rightCardText.text = rightWord;
+        leftCardText.text = leftWord;
+        animator.enabled = true;
+    }
+
+    private void Update() {
+        if (animator.enabled) {
+            animatorStateInfo = animator.GetCurrentAnimatorStateInfo(0);
+            if (animatorStateInfo.normalizedTime >= loopCount) {
+                animator.enabled = false;
+                loopCount *= 2;
+            }
+        }
     }
 }
