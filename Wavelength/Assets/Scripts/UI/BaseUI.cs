@@ -7,13 +7,13 @@ using UnityEngine;
 public class BaseUI : NetworkBehaviour
 {
     // Inherited base class for all UI script
-    public void Show() {
+    public virtual void Show() {
         CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
         canvasGroup.alpha = 1.0f;
         canvasGroup.interactable = true;
         canvasGroup.blocksRaycasts = true;
     }
-    public void Hide() {
+    public virtual void Hide() {
         CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
         canvasGroup.alpha = 0.0f;
         canvasGroup.interactable = false;

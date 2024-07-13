@@ -10,9 +10,12 @@ public class GameOverUI : BaseUI
     [SerializeField] private Button playAgainButton;
     [SerializeField] private Button quitButton;
 
+    private Animator animator;
+
     private void Awake() {
         Hide();
-
+        animator = GetComponent<Animator>();
+        animator.enabled = false;
         playAgainButton.onClick.AddListener(() => {
             SceneLoader.LoadSceneNetwork(SceneLoader.Scene.Game);
         });
@@ -24,5 +27,12 @@ public class GameOverUI : BaseUI
         if (!NetworkManager.Singleton.IsHost) {
             playAgainButton.interactable = false;
         }
+    }
+
+    public override void Show() {
+        CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
+        canvasGroup.interactable = true;
+        canvasGroup.blocksRaycasts = true;
+        animator.enabled = true;
     }
 }

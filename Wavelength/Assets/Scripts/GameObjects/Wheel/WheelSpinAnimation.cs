@@ -1,10 +1,8 @@
+using System;
 using System.Collections;
-using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
-using Unity.Netcode;
-using TMPro;
-using System;
 
 public class WheelSpinAnimation : NetworkBehaviour
 {
@@ -36,9 +34,23 @@ public class WheelSpinAnimation : NetworkBehaviour
         }
 
         animator.enabled = false;
+        if (IsOwner) {
+            SyncWheelRotationServerRpc(transform.rotation.eulerAngles);
+        }
         if (NetworkManager.Singleton.IsHost) {
             TriggerOnWheelSpinFinishedServerRpc();
         }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SyncWheelRotationServerRpc(Vector3 rotation) {
+        SyncWheelRotationClientRpc(rotation);
+    }
+
+    [ClientRpc]
+    private void SyncWheelRotationClientRpc(Vector3 rotation) {
+        if (IsOwner) return;
+        transform.rotation = Quaternion.Euler(rotation);
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -54,7 +66,7 @@ public class WheelSpinAnimation : NetworkBehaviour
 
     [ServerRpc(RequireOwnership = false)]
     private void SpinWheelServerRpc() {
-        float spinSpeed = UnityEngine.Random.Range(1, 5);
+        float spinSpeed = UnityEngine.Random.Range(3, 10);
 
         SpinWheelClientRpc(spinSpeed);
     }
@@ -66,5 +78,4 @@ public class WheelSpinAnimation : NetworkBehaviour
         animator.enabled = true;
         StartCoroutine(SpinWheel());
     }
-   
 }

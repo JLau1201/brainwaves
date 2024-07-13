@@ -19,6 +19,7 @@ public class WavelengthManager : NetworkBehaviour
     [SerializeField] private AddScoreAnimation addScoreTeamOneAnimation;
     [SerializeField] private AddScoreAnimation addScoreTeamTwoAnimation;
     [SerializeField] private GameOverUI gameOverUI;
+    [SerializeField] private ParticleSystem confetti;
 
     [Header("Buttons")]
     [SerializeField] private Button confirmButton;
@@ -40,7 +41,8 @@ public class WavelengthManager : NetworkBehaviour
 
     private float gameStartCountdown = 3f;
 
-    private int targetScore = 1;
+    private int targetScore = 10;
+    private bool isGameStarted = false;
 
     // Track current state of the game
     private GameState currentGameState;    
@@ -70,15 +72,23 @@ public class WavelengthManager : NetworkBehaviour
     private void AddScoreTeamTwoAnimation_OnAddScoreAnimationFinished(object sender, System.EventArgs e) {
         teamTwoUI.UpdateScore(teamTwoScore);
         if (teamTwoScore >= targetScore) {
+            PlayConfettiClientRpc();
             PlayTransitionAnimationClientRpc("", "2");
         }
     }
 
+
     private void AddScoreTeamOneAnimation_OnAddScoreAnimationFinished(object sender, System.EventArgs e) {
         teamOneUI.UpdateScore(teamOneScore);
         if (teamOneScore >= targetScore) {
+            PlayConfettiClientRpc();
             PlayTransitionAnimationClientRpc("", "1");
         }
+    }
+
+    [ClientRpc]
+    private void PlayConfettiClientRpc() {
+        confetti.Play();
     }
 
     private void WheelSpinAnimation_OnWheelSpinFinished(object sender, System.EventArgs e) {
@@ -87,6 +97,10 @@ public class WavelengthManager : NetworkBehaviour
 
     private void TransitionUIScript_OnTransitionAnimationFinished(object sender, System.EventArgs e) {
         if (!NetworkManager.Singleton.IsHost) return;
+        if (!isGameStarted) {
+            isGameStarted = true;
+            return;
+        }
         if (currentGameState == GameState.Finished) return;
         switch (currentTurnState) {
             case TurnState.TurnStart:
@@ -131,7 +145,9 @@ public class WavelengthManager : NetworkBehaviour
                 ChangeTurnClientRpc(currentTurnState);
                 break;
             case TurnState.TurnEnd:
-                ChangeGameState(GameState.Finished);
+                if(teamOneScore >= targetScore || teamTwoScore >= targetScore) {
+                    ChangeGameState(GameState.Finished);
+                }
                 ChangeTurnClientRpc(TurnState.TurnEnd);
                 StartCoroutine(EndOfTurn());
                 break;
@@ -139,12 +155,15 @@ public class WavelengthManager : NetworkBehaviour
     }
 
     private IEnumerator EndOfTurn() {
-        int overStateTime = 5;
-        yield return new WaitForSeconds(overStateTime);
-
+        int overStateTime;
         if(currentGameState == GameState.Finished) {
+            overStateTime = 10;
+            yield return new WaitForSeconds(overStateTime);
             ShowGameOverUIClientRpc();
         } else {
+            overStateTime = 3;
+            yield return new WaitForSeconds(overStateTime);
+
             string role = "Changing Sides";
             switch (teamTurn) {
                 case 0:
@@ -245,10 +264,10 @@ public class WavelengthManager : NetworkBehaviour
 
     private void Awake() {
         Instance = this;
+        confetti.Stop();
         if (NetworkManager.Singleton.IsHost) {
             InitializeGame();
             StartCoroutine(StartGameCountdown());
-            PlayTransitionAnimationClientRpc("ASDASD", "");
         }
 
         confirmButton.onClick.AddListener(OnConfirmButtonServerRpc);

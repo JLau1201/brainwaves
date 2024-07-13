@@ -17,16 +17,14 @@ public class TransitionUI : MonoBehaviour
 
     private void Awake() {
         animator = GetComponent<Animator>();
-        animator.enabled = false;
+        roleText.text = "Game Start";
+        turnStartText.text = "Team 1 Goes First!";
     }
 
     public void SetText(string role, string playerName) {
         if (role == "") {
             roleText.text = "Game Over";
             turnStartText.text = "Team " + playerName + " Wins!";
-        } else if (playerName == "") {
-            roleText.text = "Game Start";
-            turnStartText.text = "Team 1 Goes First!";
         } else {
             roleText.text = role;
             turnStartText.text = playerName + " Turn Start!";
