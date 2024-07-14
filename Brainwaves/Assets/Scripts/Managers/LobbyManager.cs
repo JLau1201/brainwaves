@@ -19,6 +19,7 @@ public class LobbyManager : MonoBehaviour
     public static LobbyManager Instance { get; private set; }
 
     public event EventHandler OnLobbyUpdated;
+    public event EventHandler OnLobbyJoinError;
 
     private Lobby lobby;
     // Heartbeat timer to keep lobby active
@@ -106,6 +107,7 @@ public class LobbyManager : MonoBehaviour
             OnLobbyUpdated?.Invoke(this, EventArgs.Empty);
 
         } catch (LobbyServiceException e) {
+            OnLobbyJoinError?.Invoke(this, EventArgs.Empty);
             Debug.Log(e);
         }
     }
@@ -129,6 +131,7 @@ public class LobbyManager : MonoBehaviour
             OnLobbyUpdated?.Invoke(this, EventArgs.Empty);
 
         } catch (LobbyServiceException e) {
+            OnLobbyJoinError?.Invoke(this, EventArgs.Empty);
             Debug.Log(e);
         }
     }

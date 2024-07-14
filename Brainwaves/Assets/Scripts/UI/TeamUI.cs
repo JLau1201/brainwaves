@@ -1,9 +1,8 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TeamUI : NetworkBehaviour
 {
@@ -14,6 +13,8 @@ public class TeamUI : NetworkBehaviour
     [Header("Transforms")]
     [SerializeField] private Transform playerDataHolder;
     [SerializeField] private Transform playerDataSingle;
+
+
 
     [SerializeField] private int team;
 
@@ -57,5 +58,26 @@ public class TeamUI : NetworkBehaviour
         Transform playerDataSingleTransform = Instantiate(playerDataSingle, playerDataHolder);
         PlayerDataSingleUI playerDataSingleUI = playerDataSingleTransform.gameObject.GetComponent<PlayerDataSingleUI>();
         playerDataSingleUI.UpdatePlayerName(playerName);
+    }
+
+    public void UpdatePlayerIcons(int psychicInd, int guesserInd) {
+        UpdatePlayerIconsClientRpc(psychicInd, guesserInd);
+    }
+
+    [ClientRpc]
+    private void UpdatePlayerIconsClientRpc(int psychicInd, int guesserInd) {
+        int i = 0;
+        foreach(Transform child in playerDataHolder) {
+            if (child.gameObject.activeSelf == false) continue;
+            PlayerDataSingleUI playerDataSingleUI = child.GetComponent<PlayerDataSingleUI>();
+            if(i == psychicInd) {
+                playerDataSingleUI.SetPlayerIcon(0);
+            }else if(i == guesserInd) {
+                playerDataSingleUI.SetPlayerIcon(1);
+            } else {
+                playerDataSingleUI.SetPlayerIcon(2);
+            }
+            i++;
+        }
     }
 }

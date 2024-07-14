@@ -89,6 +89,11 @@ public class MultiplayerManager : NetworkBehaviour
     public void Shutdown() {
         playerDataList.Clear();
         NetworkManager.Singleton.Shutdown();
+        if (IsHost) {
+            NetworkManager.Singleton.ConnectionApprovalCallback -= NetworkManager_ConnectionApprovalCallback;
+        } else {
+            NetworkManager.Singleton.OnClientConnectedCallback -= NetworkManager_OnClientConnectedCallback;
+        }
     }
 
     // *** GAME MANAGER ***
