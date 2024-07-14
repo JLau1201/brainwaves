@@ -97,7 +97,7 @@ public class LobbyUI : BaseUI
 
     private void LobbyManager_OnLobbyUpdated(object sender, System.EventArgs e) {
         lobbyCode.text = LobbyManager.Instance.GetLobby().LobbyCode;
-        if (!IsServer) {
+        if (!LobbyManager.Instance.IsLobbyHost()) {
             startButton.interactable = false;
         }
     }

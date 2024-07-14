@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,6 +18,9 @@ public class TurnManager : MonoBehaviour {
     [SerializeField] private WheelCover wheelCover;
     [SerializeField] private RotateDial rotateDial;
 
+    [Header("Texts")]
+    [SerializeField] private TextMeshProUGUI roleText;
+
     // Track the role of the player during the turn
     private PlayerRole currentPlayerRole;
     public enum PlayerRole {
@@ -32,6 +36,7 @@ public class TurnManager : MonoBehaviour {
 
     public void SetPlayerTurnRole(PlayerRole role) {
         currentPlayerRole = role;
+        roleText.text = role.ToString();
         wheelCover.CloseCover();
     }
 

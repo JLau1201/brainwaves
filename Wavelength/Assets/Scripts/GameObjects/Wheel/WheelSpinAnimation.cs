@@ -66,7 +66,7 @@ public class WheelSpinAnimation : NetworkBehaviour
 
     [ServerRpc(RequireOwnership = false)]
     private void SpinWheelServerRpc() {
-        float spinSpeed = UnityEngine.Random.Range(3, 10);
+        float spinSpeed = UnityEngine.Random.Range(3f, 10f);
 
         SpinWheelClientRpc(spinSpeed);
     }

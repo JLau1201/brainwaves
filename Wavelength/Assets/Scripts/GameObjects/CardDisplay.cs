@@ -15,8 +15,8 @@ public class CardDisplay : NetworkBehaviour
 
     private Animator animator;
     private AnimatorStateInfo animatorStateInfo;
-    private int currLoopCount = 15;
-    private int loopAmount = 15;
+    private int currLoopCount = 30;
+    private int loopAmount = 30;
 
 
     private List<string[]> allCardsList = new List<string[]>();
@@ -25,6 +25,7 @@ public class CardDisplay : NetworkBehaviour
         ParseCSV();
         animator = GetComponent<Animator>();
         animator.enabled = false;
+        animator.speed = 2;
         ResetCards();
     }
 
@@ -66,6 +67,8 @@ public class CardDisplay : NetworkBehaviour
             if (animatorStateInfo.normalizedTime >= currLoopCount) {
                 animator.enabled = false;
                 currLoopCount += loopAmount;
+                rightCardText.transform.position = new Vector3(0, .1f, 0);
+                leftCardText.transform.position = new Vector3(0, .1f, 0);
             }
         }
     }
