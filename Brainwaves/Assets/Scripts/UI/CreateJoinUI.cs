@@ -23,6 +23,11 @@ public class CreateJoinUI : BaseUI
 
     private void Start() {
         MultiplayerManager.Instance.OnConnectionApproved += MultiplayerManager_OnConnectionApproved;
+        LobbyManager.Instance.OnLobbyJoinError += LobbyManager_OnLobbyJoinError;
+    }
+
+    private void LobbyManager_OnLobbyJoinError(object sender, System.EventArgs e) {
+        connectingUI.Hide();
     }
 
     private void MultiplayerManager_OnConnectionApproved(object sender, System.EventArgs e) {
@@ -72,5 +77,6 @@ public class CreateJoinUI : BaseUI
     public override void OnDestroy() {
         base.OnDestroy();
         MultiplayerManager.Instance.OnConnectionApproved -= MultiplayerManager_OnConnectionApproved;
+        LobbyManager.Instance.OnLobbyJoinError -= LobbyManager_OnLobbyJoinError;
     }
 }

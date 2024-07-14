@@ -39,7 +39,7 @@ public class WavelengthManager : NetworkBehaviour
     private int teamOneScore;
     private int teamTwoScore;
 
-    private float gameStartCountdown = 3f;
+    private float gameStartCountdown = 4f;
 
     private int targetScore = 10;
     private bool isGameStarted = false;
@@ -127,10 +127,14 @@ public class WavelengthManager : NetworkBehaviour
                     playerName = teamsList[teamTurn][teamOnePsychicTurnInd].playerName.ToString();
                     AssignPlayerRoleClientRpc(teamTurn, teamOnePsychicTurnInd, teamOneGuesserTurnInd);
                     rotateDial.ChangeOwnership(teamsList[teamTurn][teamOneGuesserTurnInd].clientId);
+                    teamOneUI.UpdatePlayerIcons(teamOnePsychicTurnInd, teamOneGuesserTurnInd);
+                    teamTwoUI.UpdatePlayerIcons(-1, -1);
                 } else { 
                     playerName = teamsList[teamTurn][teamTwoPsychicTurnInd].playerName.ToString();
                     AssignPlayerRoleClientRpc(teamTurn, teamTwoPsychicTurnInd, teamTwoGuesserTurnInd);
                     rotateDial.ChangeOwnership(teamsList[teamTurn][teamTwoGuesserTurnInd].clientId);
+                    teamOneUI.UpdatePlayerIcons(-1, -1);
+                    teamTwoUI.UpdatePlayerIcons(teamTwoPsychicTurnInd, teamTwoGuesserTurnInd);
                 }
 
                 PlayTransitionAnimationClientRpc(role, playerName);
