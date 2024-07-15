@@ -1,2 +1,2 @@
-# wavelength
-Wavelength board game in Unity
+# brainwaves
+Not the wavelength board game
