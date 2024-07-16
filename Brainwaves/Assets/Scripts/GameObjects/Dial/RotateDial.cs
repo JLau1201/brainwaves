@@ -38,7 +38,7 @@ public class RotateDial : MonoBehaviour
     private void Update() {
         if (isHoldingDial && canSpin) {
             RotateWithMouse();
-        } else if(GameInputs.Instance.GetKeyRotate().x != 0){
+        } else if(GameInputs.Instance.GetKeyRotate().x != 0 && canSpin){
             RotateWithKeys();
         }
     }
